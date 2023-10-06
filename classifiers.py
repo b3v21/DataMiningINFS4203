@@ -61,8 +61,6 @@ def niave_bayes(train_data, test_data):
         )
 
     result = {}
-    print(len(test_data))
-    print(len(train_data))
     for row in range(len(test_data)):
         row_max = 0
         row_max_label = None

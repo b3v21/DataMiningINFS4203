@@ -40,9 +40,6 @@ def cross_validate(file, k, imp_method, norm_method, clean_method, classifier):
             )
         true_labels = normalised_test_data["Label"].to_dict()
 
-        print(list(true_labels.values()))
-        print(list(predicted_labels.values()))
-
         mc_f1_res = mc_f1(list(true_labels.values()), list(predicted_labels.values()))
         print(mc_f1_res)
 
