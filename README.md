@@ -1,8 +1,8 @@
 ### DataMiningINFS4203 ###
-Author: Ben Carey
-Last Modified: 9/10/2023
-Primarly coded on a Windows 10 machine but should be globally compatible
-Coded with Python 3.9.13
+- Author: Ben Carey
+- Last Modified: 9/10/2023
+- Primarly coded on a Windows 10 machine but should be globally compatible
+- Coded with Python 3.9.13
 
 ### RUN INSTRUCTIONS ###
 - Make sure pip is installed on your machine
