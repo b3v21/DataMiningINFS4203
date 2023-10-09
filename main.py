@@ -29,9 +29,9 @@ def find_best_classifier():
     df = pd.concat([pd.read_csv("data/train.csv"), pd.read_csv("data/add_train.csv")])
 
     # Test KNN classifier with different magnitudes of n-fold cross validation
-    # n using [5,10] and k using [5,10,15,20]
+    # n using [5,10] and k using [10,15,20]
     for n in [5, 10]:
-        for k in [5, 10, 15, 20]:
+        for k in [10, 15, 20]:
             for imputiser in [class_specifc, all_value]:
                 for metric in [manhattan, euclidean]:
                     print(
