@@ -70,13 +70,18 @@ def niave_bayes(train_data, test_data):
             # Calculate probability of label given this row
             # p(label | row) = p(label) * p(row,col | label) for all rows
             for col in train_data.columns[100:]:
-                prob[(col,label)] = (len(
-                    train_data[
-                        (train_data["Label"] == label)
-                        & (train_data[col] == test_data.iloc[row][col])
-                    ]
-                ) + 1) / (len(train_data[train_data["Label"] == label]) + len(train_data[col].unique()))
-
+                prob[(col, label)] = (
+                    len(
+                        train_data[
+                            (train_data["Label"] == label)
+                            & (train_data[col] == test_data.iloc[row][col])
+                        ]
+                    )
+                    + 1
+                ) / (
+                    len(train_data[train_data["Label"] == label])
+                    + len(train_data[col].unique())
+                )
 
         for label in range(0, 10):
             row_prob = label_prob[label]  # p(label)
@@ -88,4 +93,3 @@ def niave_bayes(train_data, test_data):
                 row_max_label = label
         result[test_data.iloc[row].name] = row_max_label
     return result
-

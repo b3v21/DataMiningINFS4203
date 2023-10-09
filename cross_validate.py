@@ -5,11 +5,19 @@ from normalisation import standardise, min_max_normalise
 from clean import gaussian_outlier_detection
 from classifiers import k_NN, niave_bayes
 from metrics import manhattan, mc_f1
+import time as t
 
 
-def cross_validate(file, k, imp_method, norm_method, clean_method, classifier):
-    df = pd.read_csv(file)
-
+def cross_validate(
+    df,
+    k,
+    imp_method,
+    norm_method,
+    clean_method,
+    classifier,
+    kNN_k=15,
+    kNN_dist_metric=manhattan,
+):
     partition_percentage = 1 / k
     samples = []
 
@@ -20,8 +28,8 @@ def cross_validate(file, k, imp_method, norm_method, clean_method, classifier):
 
     mc_f1_scores = []
     for i in range(k):
-        print(f"Calculating fold {i+1} of {k}")
-
+        print(f"Computing fold {i + 1} of {k}")
+        start = t.time()
         # apply preprocessing to train data
         imputised_train_data = imp_method(pd.concat(samples[:i] + samples[i + 1 :]))
         cleaned_train_data = clean_method(imputised_train_data)
@@ -36,25 +44,18 @@ def cross_validate(file, k, imp_method, norm_method, clean_method, classifier):
             predicted_labels = classifier(normalised_train_data, normalised_test_data)
         else:
             predicted_labels = classifier(
-                15, normalised_train_data, normalised_test_data, norm_method, manhattan
+                kNN_k,
+                normalised_train_data,
+                normalised_test_data,
+                norm_method,
+                kNN_dist_metric,
             )
         true_labels = normalised_test_data["Label"].to_dict()
 
         mc_f1_res = mc_f1(list(true_labels.values()), list(predicted_labels.values()))
-        print(mc_f1_res)
-
         mc_f1_scores.append(mc_f1_res)
+        end = t.time()
+        print(f"Macro F1: {round(mc_f1_res,3)}")
+        print(f"Elapsed: {round(end - start,0)} seconds")
 
     return sum(mc_f1_scores) / k
-
-
-if __name__ == "__main__":
-    res = cross_validate(
-        "data/train.csv", 10, class_specifc, standardise, min_max_normalise, k_NN
-    )
-    print("AVERAGE MACRO f1:", round(res, 2))
-    
-    res2 = cross_validate(
-        "data/train.csv", 10, class_specifc, standardise, min_max_normalise, niave_bayes
-    )
-    print("AVERAGE MACRO f1:", round(res, 2))
