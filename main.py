@@ -211,6 +211,16 @@ def classify(
     df3 = pd.concat([df, df2]) 
     df3.to_csv("s4641154.csv", index=False, header=False)
 
+    print(f"Output file generated:")
+    print(
+            f"Classifier: {best_classifier.__name__}\n"
+            f"Imputiser: {best_imputiser.__name__}\n"
+            f"Normaliser: {best_normaliser.__name__}\n"
+            f"Cleaner: {best_cleaner.__name__}\n"
+            f"Distance Metric: {best_dist_metric.__name__}\n\n"
+        )
+    print(f"Macro F1 = {round(float(best_result),3)}, Accuracy = {round(float(best_acc),3)}")
+
 if __name__ == "__main__":
     # This is turned off by default as it takes a while to run on most machines.
     # The best classifier is loaded into classify() below.
