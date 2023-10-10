@@ -2,11 +2,24 @@ import pandas as pd
 import operator
 import numpy as np
 
+def custom_mean_class_spec(series, data, col):
+    non_nan_values = series.dropna()
+    if non_nan_values.empty:
+        return data[col].mean()  # Custom value when no non-null values
+    else:
+        return non_nan_values.mean()
+    
+def custom_mean_all_val(series):
+    non_nan_values = series.dropna()
+    if non_nan_values.empty:
+        return 0  # Custom value when no non-null values
+    else:
+        return non_nan_values.mean()
 
 def class_specifc(data):
     for col in data.columns[0:100]:
         data = data.replace("nan", pd.NA)
-        data[col].fillna(data.groupby("Label")[col].transform("mean"), inplace=True)
+        data[col].fillna(data.groupby("Label")[col].transform(custom_mean_class_spec, data, col), inplace=True)
     for col in data.columns[100:]:
         if col == "Label":
             continue
@@ -25,14 +38,17 @@ def class_specifc(data):
 def all_value(data):
     for col in data.columns[0:100]:
         data = data.replace("nan", pd.NA)
-        data[col].fillna(data[col].mean(), inplace=True)
+        data[col].fillna(custom_mean_all_val(data[col]), inplace=True)
     for col in data.columns[100:]:
         if col == "Label":
             continue
 
-        mode = data[col].mode()
+        mode = data[col].mode()[0]
         if isinstance(mode, np.ndarray):
             mode = mode[0]
+        
+        if mode == "nan":
+            mode = np.random.choice(data[col].unique())
 
         data[col].fillna(mode, inplace=True)
     return data
