@@ -26,6 +26,7 @@ def find_best_classifier():
     best_dist_metric = None
     best_normaliser = None
     best_cleaner = None
+    best_acc = 0
 
     # Combine both sets of training data
     df = pd.concat([pd.read_csv("data/train.csv"), pd.read_csv("data/add_train.csv")])
@@ -37,13 +38,15 @@ def find_best_classifier():
                 print(
                         f"CV for {n}-fold niave bayes: \nimp = {class_specific.__name__} \nnormaliser = {normaliser.__name__} \ncleaner = {cleaner.__name__}\n"
                     )
-                res = cross_validate(
+                f1, acc = cross_validate(
                     df, n, class_specific, normaliser, cleaner, niave_bayes_multinominal
                 )
-                print(f"Average Macro F1:", round(float(res), 5), "\n")
+                print(f"Average Macro F1:", round(float(f1), 5))
+                print(f"Average Accuracy:", round(float(acc), 5), "\n")
 
-                if res > best_result:
-                    best_result = round(res, 5)
+                if f1 > best_result:
+                    best_result = round(f1, 5)
+                    best_acc = round(acc,5)
                     best_classifier = niave_bayes_multinominal
                     best_hyperparameters = n
                     best_normaliser = normaliser
@@ -57,18 +60,20 @@ def find_best_classifier():
                 print(
                         f"CV for {n}-fold decision-tree: \nimp = {class_specific.__name__} \nnormaliser = {normaliser.__name__} \ncleaner = {cleaner.__name__}\n"
                     )
-                res = cross_validate(
+                f1, acc = cross_validate(
                     df, n, class_specific, normaliser, cleaner, decision_tree
                 )
-                print(f"Average Macro F1:", round(float(res), 5), "\n")
+                print(f"Average Macro F1:", round(float(f1), 5))
+                print(f"Average Accuracy:", round(float(acc), 5), "\n")
 
-                if res > best_result:
-                    best_result = round(res, 5)
+                if f1 > best_result:
+                    best_result = round(f1, 5)
                     best_classifier = decision_tree
                     best_hyperparameters = n
                     best_normaliser = normaliser
                     best_imputiser = class_specific
                     best_cleaner = cleaner
+                    best_acc = round(acc,5)
     
     # Test KNN classifier with different magnitudes of n-fold cross validation and different k values
     for n in [5, 10]:
@@ -79,7 +84,7 @@ def find_best_classifier():
                         print(
                             f"CV for {n}-fold kNN (k = {k}): \nmetric = {metric.__name__} \nimp = {class_specific.__name__} \nnormaliser = {normaliser.__name__} \ncleaner = {cleaner.__name__}\n"
                         )
-                        res = cross_validate(
+                        f1, acc = cross_validate(
                             df,
                             n,
                             class_specific,
@@ -91,47 +96,50 @@ def find_best_classifier():
                         )
                         print(
                             f"Average Macro F1:",
-                            round(float(res), 5),
-                            "\n",
+                            round(float(f1), 5),
                         )
-
-                        if res > best_result:
-                            best_result = res
+                        print(f"Average Accuracy:", round(float(acc), 5), "\n")
+                        if f1 > best_result:
+                            best_result = round(f1, 5)
                             best_classifier = k_NN
                             best_hyperparameters = (n, k)
                             best_dist_metric = metric
                             best_imputiser = class_specific
                             best_normaliser = normaliser
                             best_cleaner = cleaner
+                            best_acc = round(acc,5)
                         
     # Test ensemble classifer with different magnitudes of n-fold cross validation and different k values
     for n in [5,10]:
-        for k in [10,20]:
+        for k in [10,20,40,60]:
             for normaliser in [min_max_normalise, standardise]:
                 for metric in [manhattan, euclidean]:
                     for cleaner in [isolation_forest, gaussian_outlier_detection]:
                         print(f"CV for {n}-fold kNN-NB-dt Ensemble (k = {k}), \nimp = {class_specific.__name__} \nmetric = {metric.__name__} \nnormaliser = {normaliser.__name__} \ncleaner = {cleaner.__name__}\n")
-                        res = cross_validate(
+                        f1, acc = cross_validate(
                             df, n, class_specific, normaliser, cleaner, ensemble_kNN_nb_dt, kNN_k=k, kNN_dist_metric=metric
                         )
-                        print(f"Average Macro F1:", round(float(res), 5), "\n")
-
-                        if res > best_result:
-                            best_result = round(res, 5)
+                        print(f"Average Macro F1:", round(float(f1), 5))
+                        print(f"Average Accuracy:", round(float(acc), 5), "\n")
+                        
+                        if f1 > best_result:
+                            best_result = round(f1, 5)
                             best_classifier = ensemble_kNN_nb_dt
                             best_hyperparameters = (n,k)
                             best_normaliser = normaliser
                             best_imputiser = class_specific
                             best_dist_metric = metric
                             best_cleaner = cleaner
+                            best_acc = round(acc,5)
             
 
     if best_classifier == k_NN or best_classifier == ensemble_kNN_nb_dt:
         print("Best result:")
         print(
-            f"Macro F1 = {best_result}, with {best_classifier.__name__}, using hyperparameters n = {best_hyperparameters[0]}, k = {best_hyperparameters[1]}"
+            f"Macro F1 = {best_result}, Accuracy = {best_acc}, using hyperparameters n = {best_hyperparameters[0]}, k = {best_hyperparameters[1]}"
         )
         print(
+            f"Classifier: {best_classifier.__name__} \n"
             f"Imputiser: {best_imputiser.__name__} \n"
             f"Distance Metric: {best_dist_metric.__name__}\n"
             f"Normaliser: {best_normaliser.__name__}\n"
@@ -141,10 +149,11 @@ def find_best_classifier():
     else:
         print("Best result:")
         print(
-            f"Macro F1 = {best_result}, with {best_classifier.__name__}, using hyperparameters n = {best_hyperparameters}"
+            f"Macro F1 = {best_result}, Accuracy = {best_acc}, using hyperparameters n = {best_hyperparameters}"
         )
         print(
-            f"Imputiser: {best_imputiser.__name__} \n"
+            f"Classifier: {best_classifier.__name__}\n"
+            f"Imputiser: {best_imputiser.__name__}\n"
             f"Normaliser: {best_normaliser.__name__}\n"
             f"Cleaner: {best_cleaner.__name__}\n"
         )
@@ -156,12 +165,13 @@ def find_best_classifier():
         best_imputiser,
         best_result,
         best_normaliser,
-        best_cleaner
+        best_cleaner,
+        best_acc
     )
 
 
 def classify(
-    best_classifer, best_hyperparameters, best_dist_metric, best_imputiser, best_result, best_normaliser, best_cleaner
+    best_classifer, best_hyperparameters, best_dist_metric, best_imputiser, best_result, best_normaliser, best_cleaner, best_acc
 ):
     # CLASSIFY TEST DATA USING BEST CLASSIFIER
     train_data = pd.concat(
@@ -195,13 +205,11 @@ def classify(
         )
 
     # Generate report based on results
-    f = open("s4641154.csv", "w")
-    for line in result:
-        f.write(str(line))
-        f.write("\n")
-    f.write(str(round(float(best_result),3)))
-    f.close()
-
+    df = pd.DataFrame([str(line) for line in result])
+    df2 = pd.DataFrame([[str(round(float(best_acc),3)), str(round(float(best_result),3))]])
+    
+    df3 = pd.concat([df, df2]) 
+    df3.to_csv("s4641154.csv", index=False, header=False)
 
 if __name__ == "__main__":
     # This is turned off by default as it takes a while to run on most machines.
@@ -213,8 +221,17 @@ if __name__ == "__main__":
         best_imputiser,
         best_result,
         best_normaliser,
-        best_cleaner
+        best_cleaner,
+        best_acc
     ) = find_best_classifier()
+    
+    # best_classifer = ensemble_kNN_nb_dt
+    # best_hyperparameters = (5,10)
+    # best_dist_metric = manhattan
+    # best_imputiser = class_specific
+    # best_result = 0.968
+    # best_normaliser = standardise
+    # best_cleaner = isolation_forest
 
     classify(
         best_classifer,
@@ -223,5 +240,6 @@ if __name__ == "__main__":
         best_imputiser,
         best_result,
         best_normaliser,
-        best_cleaner
+        best_cleaner,
+        best_acc
     )

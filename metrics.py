@@ -1,6 +1,8 @@
 import numpy as np
 import sklearn.metrics as skm
 
+def accuracy (y_true, y_pred):
+    return skm.accuracy_score(y_true, y_pred)
 
 def manhattan(p1, p2):
     return sum(np.abs(np.array(p1) - np.array(p2)))

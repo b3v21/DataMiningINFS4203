@@ -1,9 +1,7 @@
 import pandas as pd
-
 from classifiers import k_NN, niave_bayes_multinominal, ensemble_kNN_nb_dt, decision_tree
-from metrics import manhattan, mc_f1
+from metrics import manhattan, mc_f1, accuracy
 import time as t
-
 
 def cross_validate(
     df,
@@ -19,7 +17,7 @@ def cross_validate(
     num_rows = len(df) // k
     samples = []
 
-    shuffled_df = df.sample(frac=1)
+    shuffled_df = df.sample(frac=1, random_state=69)
 
     for i in range(k):
         if i < k - 1:
@@ -29,6 +27,7 @@ def cross_validate(
         samples.append(part)
 
     mc_f1_scores = []
+    acc_scores = []
     for i in range(k):
         print(f"Computing fold {i + 1} of {k} (test nrows = {len(samples[i])})")
         start = t.time()
@@ -64,9 +63,13 @@ def cross_validate(
         true_labels = normalised_test_data["Label"]
 
         mc_f1_res = mc_f1(true_labels, predicted_labels)
+        acc_res = accuracy(true_labels, predicted_labels)
         mc_f1_scores.append(mc_f1_res)
+        acc_scores.append(acc_res)
+        
         end = t.time()
         print(f"Macro F1: {round(mc_f1_res,5)}")
-        print(f"Elapsed: {round(end - start,1)} seconds")
+        print(f"Accuracy: {round(acc_res, 5)}")
+        print(f"Elapsed: {round(end - start,1)} seconds\n")
 
-    return sum(mc_f1_scores) / k
+    return (sum(mc_f1_scores) / k, sum(acc_scores) / k)
