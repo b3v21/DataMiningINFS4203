@@ -1,8 +1,3 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from imputise import class_specifc, all_value
-from clean import gaussian_outlier_detection
-
 
 def standardise(data, cols=None):
     if cols is None:

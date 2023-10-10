@@ -1,6 +1,4 @@
-import pandas as pd
-from imputise import class_specifc, all_value
-from scipy.spatial.distance import pdist, squareform
+from sklearn.ensemble import IsolationForest
 
 
 def gaussian_outlier_detection(data):
@@ -13,6 +11,13 @@ def gaussian_outlier_detection(data):
         data = data[data[col] > mean - 2 * std]
     return data
 
+def isolation_forest(data):
+    clf = IsolationForest(contamination=0.05)
+    clf.fit(data)
+    is_outlier = clf.predict(data) == -1
+    
+    outlier_indices = data.index[is_outlier]
+    data.drop(outlier_indices, inplace=True)
+    
+    return data
 
-data = pd.read_csv("data/train.csv")
-data = gaussian_outlier_detection(all_value(data))

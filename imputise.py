@@ -16,7 +16,7 @@ def custom_mean_all_val(series):
     else:
         return non_nan_values.mean()
 
-def class_specifc(data):
+def class_specific(data):
     for col in data.columns[0:100]:
         data = data.replace("nan", pd.NA)
         data[col].fillna(data.groupby("Label")[col].transform(custom_mean_class_spec, data, col), inplace=True)

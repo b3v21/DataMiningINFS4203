@@ -1,9 +1,6 @@
 import pandas as pd
 
-from imputise import class_specifc, all_value
-from normalisation import standardise, min_max_normalise
-from clean import gaussian_outlier_detection
-from classifiers import k_NN, niave_bayes_gaussian, niave_bayes_multinominal
+from classifiers import k_NN, niave_bayes_multinominal, ensemble_kNN_nb_dt, decision_tree
 from metrics import manhattan, mc_f1
 import time as t
 
@@ -48,14 +45,21 @@ def cross_validate(
         # Remove label column from test data for classifier
         test_copy_no_label = normalised_test_data.drop("Label", axis=1)
 
-        if classifier == niave_bayes_multinominal or classifier == niave_bayes_gaussian:
+        if classifier == niave_bayes_multinominal:
             predicted_labels = classifier(normalised_train_data, test_copy_no_label)
-        else:
+        elif classifier == ensemble_kNN_nb_dt:
+            predicted_labels = classifier(kNN_k, normalised_train_data, test_copy_no_label, kNN_dist_metric)
+        elif classifier == k_NN:
             predicted_labels = classifier(
                 kNN_k,
                 normalised_train_data,
                 test_copy_no_label,
                 kNN_dist_metric,
+            )
+        elif classifier == decision_tree:
+            predicted_labels = classifier(
+                normalised_train_data,
+                test_copy_no_label,
             )
         true_labels = normalised_test_data["Label"]
 
@@ -63,6 +67,6 @@ def cross_validate(
         mc_f1_scores.append(mc_f1_res)
         end = t.time()
         print(f"Macro F1: {round(mc_f1_res,5)}")
-        print(f"Elapsed: {round(end - start,0)} seconds")
+        print(f"Elapsed: {round(end - start,1)} seconds")
 
     return sum(mc_f1_scores) / k

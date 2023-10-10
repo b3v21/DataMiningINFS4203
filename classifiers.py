@@ -1,10 +1,9 @@
 import pandas as pd
-from normalisation import standardise
-from metrics import manhattan
-import math
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB, MultinomialNB
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.tree import DecisionTreeClassifier
+from scipy import stats
 
 
 def one_hot_encode(data):
@@ -28,17 +27,6 @@ def k_NN(k, train_data, test_data, distance_metric):
     result = neigh.predict(test_data)
     return result
 
-
-def niave_bayes_gaussian(train_data, test_data):
-    train_data.drop(train_data.columns[100:128], axis=1, inplace=True)
-    test_data.drop(test_data.columns[100:128], axis=1, inplace=True)
-    
-    gnb = GaussianNB()
-    gnb.fit(train_data.drop("Label", axis=1), train_data["Label"])
-    
-    result = gnb.predict(test_data)
-    return result
-
 def niave_bayes_multinominal(train_data, test_data):
     train_data.drop(train_data.columns[:100], axis=1, inplace=True)
     test_data.drop(test_data.columns[:100], axis=1, inplace=True)
@@ -48,3 +36,22 @@ def niave_bayes_multinominal(train_data, test_data):
     
     result = mnb.predict(test_data)
     return result
+
+def decision_tree(train_data, test_data):
+    train_data.drop(train_data.columns[:100], axis=1, inplace=True)
+    test_data.drop(test_data.columns[:100], axis=1, inplace=True)
+    
+    clf = DecisionTreeClassifier()
+    clf.fit(train_data.drop("Label", axis=1), train_data["Label"])
+    
+    result = clf.predict(test_data)
+    return result
+
+def ensemble_kNN_nb_dt(k, train_data, test_data, dist_metric):
+
+    kNN_res = k_NN(k, train_data.copy(), test_data.copy(), dist_metric)
+    decision_tree_res = decision_tree(train_data.copy(), test_data.copy())
+    niave_bayes_multinominal_res = niave_bayes_multinominal(train_data.copy(), test_data.copy())
+    
+    res = [stats.mode(x)[0] for x in zip(kNN_res, decision_tree_res, niave_bayes_multinominal_res)]
+    return np.array(res).flatten()
