@@ -171,7 +171,7 @@ def find_best_classifier():
 
 
 def classify(
-    best_classifer, best_hyperparameters, best_dist_metric, best_imputiser, best_result, best_normaliser, best_cleaner, best_acc
+    best_classifier, best_hyperparameters, best_dist_metric, best_imputiser, best_result, best_normaliser, best_cleaner, best_acc
 ):
     # CLASSIFY TEST DATA USING BEST CLASSIFIER
     train_data = pd.concat(
@@ -179,27 +179,27 @@ def classify(
     )
     test_data = pd.read_csv("data/test.csv")
 
-    if best_classifer == k_NN:
+    if best_classifier == k_NN:
         result = k_NN(
             best_hyperparameters[1],
             best_normaliser(best_cleaner(best_imputiser(train_data)), cols=range(0, 100)),
             best_normaliser(test_data, cols=range(0, 100)),
             best_dist_metric,
         )
-    elif best_classifer == niave_bayes_multinominal:
-        result = best_classifer(
+    elif best_classifier == niave_bayes_multinominal:
+        result = best_classifier(
             best_normaliser(best_cleaner(best_imputiser(train_data)), cols=range(0, 100)),
             best_normaliser(test_data, cols=range(0, 100)),
         )
-    elif best_classifer == ensemble_kNN_nb_dt:
-        result = best_classifer(
+    elif best_classifier == ensemble_kNN_nb_dt:
+        result = best_classifier(
             best_hyperparameters[1],
             best_normaliser(best_cleaner(best_imputiser(train_data)), cols=range(0, 100)),
             best_normaliser(test_data, cols=range(0, 100)),
             best_dist_metric
         )
-    elif best_classifer == decision_tree:
-        result = best_classifer(
+    elif best_classifier == decision_tree:
+        result = best_classifier(
             best_normaliser(best_cleaner(best_imputiser(train_data)), cols=range(0, 100)),
             best_normaliser(test_data, cols=range(0, 100)),
         )
@@ -217,34 +217,35 @@ def classify(
             f"Imputiser: {best_imputiser.__name__}\n"
             f"Normaliser: {best_normaliser.__name__}\n"
             f"Cleaner: {best_cleaner.__name__}\n"
-            f"Distance Metric: {best_dist_metric.__name__}\n\n"
+            f"Distance Metric: {best_dist_metric.__name__}\n"
         )
     print(f"Macro F1 = {round(float(best_result),3)}, Accuracy = {round(float(best_acc),3)}")
 
 if __name__ == "__main__":
     # This is turned off by default as it takes a while to run on most machines.
     # The best classifier is loaded into classify() below.
-    (
-        best_classifer,
-        best_hyperparameters,
-        best_dist_metric,
-        best_imputiser,
-        best_result,
-        best_normaliser,
-        best_cleaner,
-        best_acc
-    ) = find_best_classifier()
+    # (
+    #     best_classifier,
+    #     best_hyperparameters,
+    #     best_dist_metric,
+    #     best_imputiser,
+    #     best_result,
+    #     best_normaliser,
+    #     best_cleaner,
+    #     best_acc
+    # ) = find_best_classifier()
     
-    # best_classifer = ensemble_kNN_nb_dt
-    # best_hyperparameters = (5,10)
-    # best_dist_metric = manhattan
-    # best_imputiser = class_specific
-    # best_result = 0.968
-    # best_normaliser = standardise
-    # best_cleaner = isolation_forest
+    best_classifier = ensemble_kNN_nb_dt
+    best_hyperparameters = (10,10)
+    best_dist_metric = manhattan
+    best_imputiser = class_specific
+    best_result = 0.969
+    best_acc =  0.977
+    best_normaliser = standardise
+    best_cleaner = isolation_forest
 
     classify(
-        best_classifer,
+        best_classifier,
         best_hyperparameters,
         best_dist_metric,
         best_imputiser,
